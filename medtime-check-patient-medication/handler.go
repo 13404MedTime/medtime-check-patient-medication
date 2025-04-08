@@ -350,3 +350,81 @@ func Handle(req []byte) string {
 	responseByte, _ := json.Marshal(response)
 	return string(responseByte)
 }
+
+func CreateObject(in FunctionRequest) (Datas, Response, error) {
+	response := Response{
+		Status: "done",
+	}
+	var createdObject Datas
+	createObjectResponseInByte, err := DoRequest(fmt.Sprintf("%s/v1/object/%s?from-ofs=%t", in.BaseUrl, in.TableSlug, in.DisableFaas), "POST", in.Request, in.AppId)
+	if err != nil {
+		response.Data = map[string]interface{}{"message": "Error while creating object", "error": err.Error()}
+		response.Status = "error"
+		return Datas{}, response, errors.New("error")
+	}
+
+	err = json.Unmarshal(createObjectResponseInByte, &createdObject)
+	if err != nil {
+		response.Data = map[string]interface{}{"message": "Error while unmarshalling create object", "error": err.Error()}
+		response.Status = "error"
+		return Datas{}, response, errors.New("error")
+	}
+	return createdObject, response, nil
+}
+
+func GetListSlimObject(in GetListFunctionRequest) (GetListClientApiResponse, Response, error) {
+	response := Response{}
+	reqObject, err := json.Marshal(in.Request)
+	if err != nil {
+		response.Data = map[string]interface{}{"message": "Error while marshalling request getting list slim object", "error": err.Error()}
+		response.Status = "error"
+		return GetListClientApiResponse{}, response, errors.New("error")
+	}
+
+	if _, ok := in.Request["offset"]; !ok {
+		in.Request["offset"] = 0
+	}
+	if _, ok := in.Request["limit"]; !ok {
+		in.Request["limit"] = 2200
+	}
+
+	var getListSlimObject GetListClientApiResponse
+	url := fmt.Sprintf("%s/v2/object-slim/get-list/%s?from-ofs=%t&data=%s&offset=%d&limit=%d", in.BaseUrl, in.TableSlug, in.DisableFaas, string(reqObject), in.Request["offset"], in.Request["limit"])
+
+	getListSlimResponseInByte, err := DoRequest(url, "GET", nil, in.AppId)
+	if err != nil {
+		response.Data = map[string]interface{}{"message": "Error while getting list slim object", "error": err.Error()}
+		response.Status = "error"
+		return GetListClientApiResponse{}, response, errors.New("error")
+	}
+	err = json.Unmarshal(getListSlimResponseInByte, &getListSlimObject)
+	if err != nil {
+		response.Data = map[string]interface{}{"message": "Error while unmarshalling get list slim object", "error": err.Error()}
+		response.Status = "error"
+		return GetListClientApiResponse{}, response, errors.New("error")
+	}
+	return getListSlimObject, response, nil
+}
+
+func UpdateObject(in FunctionRequest) (ClientApiUpdateResponse, Response, error) {
+	response := Response{
+		Status: "done",
+	}
+
+	var updateObject ClientApiUpdateResponse
+	updateObjectResponseInByte, err := DoRequest(fmt.Sprintf("%s/v1/object/%s?from-ofs=%t", in.BaseUrl, in.TableSlug, in.DisableFaas), "PUT", in.Request, in.AppId)
+	if err != nil {
+		response.Data = map[string]interface{}{"message": "Error while updating object", "error": err.Error()}
+		response.Status = "error"
+		return ClientApiUpdateResponse{}, response, errors.New("error")
+	}
+
+	err = json.Unmarshal(updateObjectResponseInByte, &updateObject)
+	if err != nil {
+		response.Data = map[string]interface{}{"message": "Error while unmarshalling update object", "error": err.Error()}
+		response.Status = "error"
+		return ClientApiUpdateResponse{}, response, errors.New("error")
+	}
+
+	return updateObject, response, nil
+}
