@@ -533,3 +533,26 @@ func sortHours(timeStrings []string) ([]time.Time, error) {
 
 	return times, nil
 }
+
+func GetListSlimObjectGoroutine(requestBody Request) []map[string]interface{} {
+	res, _, err := GetListSlimObject(GetListFunctionRequest{
+		BaseUrl:     baseUrl,
+		TableSlug:   "patient_medication",
+		AppId:       appId,
+		Request:     requestBody.Data,
+		DisableFaas: true,
+	})
+	if err != nil {
+		return nil
+	}
+	return res.Data.Data.Response
+
+}
+
+func MultipleUpdateObject(url, tableSlug string, request Request) ([]byte, error) {
+	resp, err := DoRequest(url+"/v1/object/multiple-update/"+tableSlug, "PUT", request, appId)
+	if err != nil {
+		return nil, errors.New("error while updating multiple objects" + err.Error())
+	}
+	return resp, nil
+}
