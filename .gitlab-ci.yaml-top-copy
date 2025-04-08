@@ -1,0 +1,45 @@
+before_script:
+  - docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password $CI_REGISTRY_PASSWORD
+
+stages:
+  - build
+
+# Build the whole stack using only the faas-cli
+docker-build-prod:
+  stage: build
+  image: gitlab.udevs.io:5050/docker/openfaas:dind
+  script:
+    - FUNCTION=$(echo $CI_COMMIT_BRANCH | sed s/prod-//g)
+    # - export FUNCTION=$(cut -d "-" -f2 -f3 -f4 -f5 -f6 -f7 <<< ${CI_COMMIT_BRANCH})
+    - export OPENFAAS_URL=$UCODE_OPENFAAS_URL
+    # Build Docker image
+    - faas-cli build -f ${FUNCTION}.yml --tag=branch
+    # Login & Push Docker image to private repo
+    - faas-cli push -f ${FUNCTION}.yml --tag=branch
+    # Login to Openfaas admin panel
+    - /usr/local/bin/faas-cli login --username ${UCODE_OPENFAAS_USER} --password ${UCODE_OPENFAAS_PASSWORD}
+    # Deploy function from private repo
+    - faas-cli deploy -f ${FUNCTION}.yml --secret gitlab-registry --tag=branch
+  only:
+    - /^prod-.*/
+
+# Build the whole stack using only the faas-cli
+docker-build-staging:
+  stage: build
+  image: gitlab.udevs.io:5050/docker/openfaas:dind
+  script:
+    - FUNCTION=$(echo $CI_COMMIT_BRANCH | sed s/staging-//g)
+    # - FUNCTION=$(cut -d "-" -f2 -f3 -f4 -f5 -f6 -f7 <<< ${CI_COMMIT_BRANCH})
+    # - echo $FUNCTION
+    - export OPENFAAS_URL=$UCODE_OPENFAAS_URL
+    # Build Docker image
+    - faas-cli build -f ${FUNCTION}.yml --tag=branch
+    # Login & Push Docker image to private repo
+    - faas-cli push -f ${FUNCTION}.yml --tag=branch
+    # Login to Openfaas admin panel
+    - /usr/local/bin/faas-cli login --username ${UCODE_OPENFAAS_USER} --password ${UCODE_OPENFAAS_PASSWORD}
+    # Deploy function from private repo
+    - faas-cli deploy -f ${FUNCTION}.yml --secret gitlab-registry --tag=branch
+  only:
+    - /^staging-.*/
+

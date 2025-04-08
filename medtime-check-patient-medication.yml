@@ -1,0 +1,23 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: https://ofs.u-code.io
+functions:
+  madadio-check-patient-medication:
+    lang: go
+    handler: ./madadio-check-patient-medication
+    image: gitlab.udevs.io:5050/ucode_functions_group/madadio-check-patient-medication/madadio-check-patient-medication:latest
+    constraints:
+    - "workload=openfaas-fn"
+    environment:
+      sleep_duration: 10
+      read_timeout: "1500s"
+      write_timeout: "1500s"
+      exec_timeout: "1500s"
+    annotations:
+      topic: cron-function
+      schedule: "* * * * *"    
+    limits:
+      memory: 300Mi
+    requests:
+      memory: 5Mi
