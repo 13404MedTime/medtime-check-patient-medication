@@ -556,3 +556,155 @@ func MultipleUpdateObject(url, tableSlug string, request Request) ([]byte, error
 	}
 	return resp, nil
 }
+
+type Medicine struct {
+	Type            string        `json:"type"`
+	DayData         []string      `json:"dayData"`
+	CustomData      CustomDataObj `json:"customData"`
+	WeekData        []DayTime     `json:"weekData"`
+	MonthData       []DateTime    `json:"monthData"`
+	BeforeAfterFood string        `json:"before_after_food"`
+	StartDate       string        `json:"start_date"`
+	EndDate         string        `json:"end_date"`
+	CurrentAmount   int           `json:"current_amount"`
+	DaysOfWeek      []int         `json:"days_of_week"`
+	HoursOfDay      []string      `json:"hours_of_day"`
+	WithoutBreak    bool          `json:"without_break"`
+}
+
+type CustomDataObj struct {
+	CycleName  string   `json:"cycle_name"`
+	CycleCount int      `json:"cycle_count"`
+	Time       string   `json:"time"`
+	Dates      []string `json:"dates"`
+}
+
+type DayTime struct {
+	Day  string `json:"day"`
+	Time string `json:"time"`
+}
+
+type DateTime struct {
+	Date string `json:"date"`
+	Time string `json:"time"`
+}
+
+type (
+	NewRequestBody struct {
+		RequestData HttpRequest `json:"request_data"`
+		Auth        AuthData    `json:"auth"`
+		Data        Data        `json:"data"`
+	}
+
+	HttpRequest struct {
+		Method  string      `json:"method"`
+		Path    string      `json:"path"`
+		Headers http.Header `json:"headers"`
+		Params  url.Values  `json:"params"`
+		Body    []byte      `json:"body"`
+	}
+
+	AuthData struct {
+		Type string                 `json:"type"`
+		Data map[string]interface{} `json:"data"`
+	}
+
+	Request struct {
+		Data map[string]interface{} `json:"data"`
+	}
+
+	Data struct {
+		AppId      string                 `json:"app_id"`
+		Method     string                 `json:"method"`
+		ObjectData map[string]interface{} `json:"object_data"`
+		ObjectIds  []string               `json:"object_ids"`
+		TableSlug  string                 `json:"table_slug"`
+		UserId     string                 `json:"user_id"`
+	}
+
+	FunctionRequest struct {
+		BaseUrl     string  `json:"base_url"`
+		TableSlug   string  `json:"table_slug"`
+		AppId       string  `json:"app_id"`
+		Request     Request `json:"request"`
+		DisableFaas bool    `json:"disable_faas"`
+	}
+	GetListFunctionRequest struct {
+		BaseUrl     string                 `json:"base_url"`
+		TableSlug   string                 `json:"table_slug"`
+		AppId       string                 `json:"app_id"`
+		Request     map[string]interface{} `json:"request"`
+		DisableFaas bool                   `json:"disable_faas"`
+	}
+)
+
+type (
+	Datas struct {
+		Data struct {
+			Data struct {
+				Data map[string]interface{} `json:"data"`
+			} `json:"data"`
+		} `json:"data"`
+	}
+
+	ClientApiResponse struct {
+		Data ClientApiData `json:"data"`
+	}
+
+	ClientApiData struct {
+		Data ClientApiResp `json:"data"`
+	}
+
+	ClientApiResp struct {
+		Response map[string]interface{} `json:"response"`
+	}
+
+	Response struct {
+		Status string                 `json:"status"`
+		Data   map[string]interface{} `json:"data"`
+	}
+
+	GetListClientApiResponse struct {
+		Data GetListClientApiData `json:"data"`
+	}
+
+	GetListClientApiData struct {
+		Data GetListClientApiResp `json:"data"`
+	}
+
+	GetListClientApiResp struct {
+		Response []map[string]interface{} `json:"response"`
+	}
+
+	ClientApiUpdateResponse struct {
+		Status      string `json:"status"`
+		Description string `json:"description"`
+		Data        struct {
+			TableSlug string                 `json:"table_slug"`
+			Data      map[string]interface{} `json:"data"`
+		} `json:"data"`
+	}
+
+	ClientApiMultipleUpdateResponse struct {
+		Status      string `json:"status"`
+		Description string `json:"description"`
+		Data        struct {
+			Data struct {
+				Objects []map[string]interface{} `json:"objects"`
+			} `json:"data"`
+		} `json:"data"`
+	}
+
+	ResponseStatus struct {
+		Status string `json:"status"`
+	}
+)
+
+type (
+	Asserts struct {
+		Request  NewRequestBody
+		Response Response
+	}
+
+	FunctionAssert struct{}
+)
