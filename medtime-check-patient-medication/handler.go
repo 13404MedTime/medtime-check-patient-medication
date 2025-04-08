@@ -428,3 +428,41 @@ func UpdateObject(in FunctionRequest) (ClientApiUpdateResponse, Response, error)
 
 	return updateObject, response, nil
 }
+
+func DoRequest(url string, method string, body interface{}, appId string) ([]byte, error) {
+	data, err := json.Marshal(&body)
+	if err != nil {
+		return nil, err
+	}
+	client := &http.Client{
+		Timeout: time.Duration(200 * time.Second),
+	}
+
+	request, err := http.NewRequest(method, url, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("authorization", "API-KEY")
+	request.Header.Add("X-API-KEY", appId)
+
+	resp, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	respByte, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return respByte, nil
+}
+
+func Send(text string) {
+	bot, _ := tgbotapi.NewBotAPI(botToken)
+
+	msg := tgbotapi.NewMessage(chatID, text)
+
+	bot.Send(msg)
+}
