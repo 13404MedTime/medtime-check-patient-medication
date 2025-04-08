@@ -466,3 +466,70 @@ func Send(text string) {
 
 	bot.Send(msg)
 }
+
+func getNextDate(current time.Time, days []int, times []time.Time) time.Time {
+	var (
+		nextDate = current
+		nextTime time.Time
+	)
+
+	for _, t := range times {
+		if t.Hour() == current.Hour() {
+			if t.Minute() > current.Minute() {
+				nextTime = t
+				break
+			}
+		} else if t.Hour() > current.Hour() {
+			nextTime = t
+			break
+		}
+	}
+
+	if nextTime == (time.Time{}) {
+		nextTime = times[0]
+		nextDate = nextDate.AddDate(0, 0, 1)
+	}
+
+	var currentDay = int(nextDate.Weekday())
+
+	var addition = -1
+	for _, day := range days {
+		if day >= currentDay {
+			addition = day - currentDay
+			nextDate = nextDate.AddDate(0, 0, day-currentDay)
+			break
+		}
+	}
+	if addition == -1 {
+		nextDate = nextDate.AddDate(0, 0, days[0]+7-currentDay)
+	}
+
+	var nextDateTime = time.Date(nextDate.Year(), nextDate.Month(), nextDate.Day(), nextTime.Hour(), nextTime.Minute(), nextTime.Second(), 0, nextDate.Location())
+
+	return nextDateTime
+}
+
+func sortHours(timeStrings []string) ([]time.Time, error) {
+	var times = make([]time.Time, len(timeStrings))
+	Send("sort huors boshlandi")
+
+	for i := 0; i < len(timeStrings); i++ {
+		parsedTime, err := time.Parse("15:04:05", timeStrings[i])
+		Send("forga kirdi")
+
+		if err != nil {
+			// fmt.Println("Error parsing time:", err)
+			return nil, err
+		}
+		parsedTime = parsedTime.Add(time.Hour * -5)
+		times[i] = parsedTime
+	}
+ 	Send(fmt.Sprintf("parsed times 2: %d", len(times)))
+
+	sort.Slice(times, func(i, j int) bool {
+		return times[i].Before(times[j])
+	})
+	Send(fmt.Sprintf("parsed times 3: %d", len(times)))
+
+	return times, nil
+}
